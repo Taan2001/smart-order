@@ -1,0 +1,39 @@
+{
+    "name": "smart-order-app",
+    "version": "1.0.0",
+    "description": "smart app for stores",
+    "main": "./src/server.ts",
+    "type": "module",
+    "scripts": {
+        "dev": "cross-env DOTENV_CONFIG_PATH=.env.development nodemon",
+        "build": "node build.js",
+        "start": "cross-env DOTENV_CONFIG_PATH=./dist/.env node -r dotenv/config dist/src/index.cjs",
+        "test": "echo \"Error: no test specified\" && exit 1",
+        "lint": "eslint .",
+        "lint:fix": "eslint . --fix",
+        "prettier": "prettier --check .",
+        "prettier:fix": "prettier --write ."
+    },
+    "author": "p.ngoc.taan",
+    "license": "ISC",
+    "dependencies": {
+        "dotenv": "^17.2.3",
+        "express": "^5.2.1",
+        "winston": "^3.19.0"
+    },
+    "devDependencies": {
+        "@types/express": "^5.0.6",
+        "@typescript-eslint/eslint-plugin": "^8.52.0",
+        "@typescript-eslint/parser": "^8.52.0",
+        "cross-env": "^10.1.0",
+        "esbuild": "^0.27.2",
+        "eslint": "^9.39.2",
+        "eslint-config-prettier": "^10.1.8",
+        "eslint-plugin-prettier": "^5.5.4",
+        "nodemon": "^3.1.11",
+        "prettier": "^3.7.4",
+        "ts-node": "^10.9.2",
+        "tsx": "^4.21.0",
+        "typescript": "^5.9.3"
+    }
+}
