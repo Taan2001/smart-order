@@ -8,6 +8,7 @@ import routes from "./routes";
 
 // middlewares
 import errorHandleMiddleware from "./middlewares/error-handler.middlerware";
+import databaseConnectionHandler from "./database/db";
 
 // create express app
 const app: Application = express();
@@ -30,6 +31,9 @@ app.use(errorHandleMiddleware);
 const server = http.createServer(app);
 
 // start server
-server.listen(port, () => {
+server.listen(port, async () => {
+    // test database connection on server start
+    await databaseConnectionHandler();
+
     console.log(`Server is running at http://localhost:${port}`);
 });

@@ -1,14 +1,14 @@
 // libs
 import { Request, Response, NextFunction } from "express";
 
+// utils
+import logger from "../utils/logger";
+
 // interfaces
 import { IAppResponseError, IExceptionResponseError } from "../interfaces/app.interfaces";
 
 // types
 import { AppResponseError } from "../types/app.types";
-
-// utils
-import logger from "../utils/logger";
 
 /**
  * Error Handler Function

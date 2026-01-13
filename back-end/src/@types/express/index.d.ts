@@ -6,5 +6,6 @@ declare module "express-serve-static-core" {
         apiName: string | "";
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         payload: any;
+        currentUser: ICurrentUser | null;
     }
 }

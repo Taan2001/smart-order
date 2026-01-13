@@ -22,3 +22,11 @@ export interface IAppResponseError {
 export interface IExceptionResponseError extends Omit<AppResponseError, "statusCode"> {
     errorException: Error;
 }
+
+export interface ICurrentUser {
+    userId: string;
+    name: string;
+    phone: string;
+    type: number;
+    deleteFlg: number;
+}

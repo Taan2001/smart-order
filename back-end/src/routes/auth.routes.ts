@@ -2,7 +2,7 @@
 import { Router } from "express";
 
 // controllers
-import { postSignInController } from "../controllers/auth.controllers";
+import { postTokenController } from "../controllers/auth.controllers";
 
 // middlewares
 import headerHandlerMiddleware from "../middlewares/header-handler.middlerware";
@@ -11,7 +11,7 @@ import headerHandlerMiddleware from "../middlewares/header-handler.middlerware";
 const authRouter = Router();
 
 // [POST] /auth/token
-// authRouter.post("/token", headerHandlerMiddleware, postTokenController);
+authRouter.post("/token", headerHandlerMiddleware, postTokenController);
 
 // [POST] /auth/refresh-token
 // authRouter.post("/refresh-token", headerHandlerMiddleware, postRefreshTokenController);

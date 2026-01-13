@@ -17,12 +17,21 @@
     "author": "p.ngoc.taan",
     "license": "ISC",
     "dependencies": {
+        "dayjs": "^1.11.19",
         "dotenv": "^17.2.3",
         "express": "^5.2.1",
+        "express-rate-limit": "^8.2.1",
+        "jsonwebtoken": "^9.0.3",
+        "multer": "^2.0.2",
+        "mysql2": "^3.16.0",
+        "uuid": "^13.0.0",
         "winston": "^3.19.0"
     },
     "devDependencies": {
         "@types/express": "^5.0.6",
+        "@types/jsonwebtoken": "^9.0.10",
+        "@types/multer": "^2.0.0",
+        "@types/node": "^25.0.6",
         "@typescript-eslint/eslint-plugin": "^8.52.0",
         "@typescript-eslint/parser": "^8.52.0",
         "cross-env": "^10.1.0",
