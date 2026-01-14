@@ -35,7 +35,7 @@ export const queryPoolPromise = async <R, V>(query: string, values?: V): Promise
  * Create transaction connection from pool
  * @returns PoolConnection trong transaction
  */
-export const createTransactionConnectionPool = async (): Promise<PoolConnection> =>
+export const createConnectionPoolTransaction = async (): Promise<PoolConnection> =>
     new Promise((resolve, reject) => {
         pool.getConnection((err, connection) => {
             if (err) return reject(err);

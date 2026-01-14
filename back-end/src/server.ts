@@ -15,7 +15,6 @@ const app: Application = express();
 
 // set port, default is 3000
 const port: number = process.env.PORT ? Number.parseInt(process.env.PORT) : 3000;
-console.log(process.env.PORT);
 
 // parse request of Content-Type: application/json
 app.use(express.json());

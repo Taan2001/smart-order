@@ -1,4 +1,5 @@
 // libs
+import { PoolConnection } from "mysql2/typings/mysql/lib/PoolConnection";
 
 // utils
 import { ResponseError } from "../../utils/common";
@@ -7,10 +8,101 @@ import { ResponseError } from "../../utils/common";
 import { ERRORS } from "../../constants/error.constants";
 
 // database connection
-import { queryPoolPromise } from "../connection-pool";
+import { queryPoolPromise, transactionQueryPoolPromise } from "../connection-pool";
 
 // dtos
-import { GetUserByUserIdDTO, GetUserByUserIdValues, IGetUserByUserId } from "../dtos/auth.dtos";
+import {
+    GetUserByUserIdValues,
+    GetUserByUserIdDTO,
+    IGetUserByUserId,
+    InsertUserInformationByAdminValues,
+    InsertUserInformationByAdminDTO,
+    IInsertUserInformationByAdmin,
+} from "../dtos/auth.dtos";
+
+export const insertUserInformationByAdmin = async (
+    transaction: PoolConnection,
+    {
+        userId,
+        fullname,
+        username,
+        password,
+        phone,
+        address,
+        type,
+        createdBy,
+        createdAt,
+        createdDate,
+        updatedBy,
+        updatedAt,
+        updatedDate,
+    }: IInsertUserInformationByAdmin
+): Promise<InsertUserInformationByAdminDTO[]> => {
+    try {
+        // create sqlInsert
+        const sqlInsert = `
+            INSERT INTO M_USERS (
+                USER_ID, 
+                USER_FULLNAME,
+                USER_NAME, 
+                USER_PASSWORD, 
+                USER_PHONE, 
+                USER_ADDRESS, 
+                USER_TYPE,
+                USER_DELETE_FLG,
+                USER_CREATED_BY, 
+                USER_CREATED_AT, 
+                USER_CREATED_AT_SYSTEM, 
+                USER_UPDATED_BY, 
+                USER_UPDATED_AT, 
+                USER_UPDATED_AT_SYSTEM
+            )
+            VALUES (?, ?, ?, SHA2(?, 256), ?, ?, ?, ?, ?, ?, ?, ?, ?, ?);
+        `;
+
+        // create query parameters
+        const queryParams = [
+            userId,
+            fullname,
+            username,
+            password,
+            phone,
+            address,
+            type,
+            0,
+            createdBy,
+            createdAt,
+            createdDate,
+            updatedBy,
+            updatedAt,
+            updatedDate,
+        ];
+
+        const rows = await transactionQueryPoolPromise<InsertUserInformationByAdminDTO, InsertUserInformationByAdminValues>(
+            transaction,
+            sqlInsert,
+            queryParams
+        );
+
+        if (!rows) {
+            return [];
+        }
+        return rows;
+    } catch (error) {
+        throw ResponseError({
+            statusCode: 500,
+            errorCode: ERRORS.POST_SIGN_UP_INSERT_USER_INFORMATION_BY_ADMIN_ERROR.ERROR_CODE,
+            errorMessages: [ERRORS.POST_SIGN_UP_INSERT_USER_INFORMATION_BY_ADMIN_ERROR.ERROR_MESSAGE("M_USERS")],
+            errorDetails: [
+                {
+                    functionName: "insertUserInformationByAdmin",
+                    params: [],
+                    errorMessage: String(error),
+                },
+            ],
+        });
+    }
+};
 
 /**
  * Query the user information by userId
