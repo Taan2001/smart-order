@@ -1,3 +1,11 @@
+export interface IPostSignInRequestBody {
+    username: string;
+    password: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface IPostSignInResponse extends IPostRefreshTokenResponse {}
+
 export interface IPostSignUpRequestBody {
     username: string;
     password: string;

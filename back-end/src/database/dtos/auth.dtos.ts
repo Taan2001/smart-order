@@ -1,6 +1,16 @@
 import { DefaultInsertDTO, DefaultValues } from ".";
 
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface GetUserInformationByUsernameAndPasswordValues extends DefaultValues {}
+
+export type GetUserInformationByUsernameAndPasswordDTO = GetUserByUserIdDTO;
+
+export interface IGetUserInformationByUsernameAndPassword {
+    username: string;
+    password: string;
+}
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface InsertUserInformationByAdminValues extends DefaultValues {}
 
 export type InsertUserInformationByAdminDTO = DefaultInsertDTO;

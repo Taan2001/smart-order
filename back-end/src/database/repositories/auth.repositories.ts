@@ -18,8 +18,72 @@ import {
     InsertUserInformationByAdminValues,
     InsertUserInformationByAdminDTO,
     IInsertUserInformationByAdmin,
+    IGetUserInformationByUsernameAndPassword,
+    GetUserInformationByUsernameAndPasswordDTO,
+    GetUserInformationByUsernameAndPasswordValues,
 } from "../dtos/auth.dtos";
 
+/**
+ * Query insert the user information by userId
+ * @param {PoolConnection} transaction - Pool Connection
+ * @param {IInsertUserInformationByAdmin} payload - data to insert
+ * @returns {Promise<InsertUserInformationByAdminDTO>} - Promise resolving to user information
+ * @throws Will throw an error if the database query fails
+ */
+export const getUserInformationByUsernameAndPassword = async ({
+    username,
+    password,
+}: IGetUserInformationByUsernameAndPassword): Promise<GetUserInformationByUsernameAndPasswordDTO[]> => {
+    try {
+        // create sqlInsert
+        const sqlSelect = `
+            SELECT 
+                USER_ID AS userId,
+                USER_FULLNAME AS fullname,
+                USER_NAME AS name,
+                USER_PHONE AS phone,
+                USER_TYPE AS type,
+                USER_DELETE_FLG AS deleteFlg
+            FROM 	
+                M_USERS
+            WHERE	
+                USER_NAME = ?
+                AND USER_PASSWORD = SHA2(?, 256)
+                AND USER_DELETE_FLG = 0
+        `;
+
+        // create query parameters
+        const queryParams = [username, password];
+
+        const rows = await queryPoolPromise<GetUserInformationByUsernameAndPasswordDTO, GetUserInformationByUsernameAndPasswordValues>(sqlSelect, queryParams);
+
+        if (!rows) {
+            return [];
+        }
+        return rows;
+    } catch (error) {
+        throw ResponseError({
+            statusCode: 500,
+            errorCode: ERRORS.POST_TOKEN_QUERY_GET_USER_BY_USERNAME_AND_PASSWORD_ERROR.ERROR_CODE,
+            errorMessages: [ERRORS.POST_TOKEN_QUERY_GET_USER_BY_USERNAME_AND_PASSWORD_ERROR.ERROR_MESSAGE()],
+            errorDetails: [
+                {
+                    functionName: "getUserInformationByUsernameAndPassword",
+                    params: [],
+                    errorMessage: String(error),
+                },
+            ],
+        });
+    }
+};
+
+/**
+ * Query insert the user information by userId
+ * @param {PoolConnection} transaction - Pool Connection
+ * @param {IInsertUserInformationByAdmin} payload - data to insert
+ * @returns {Promise<InsertUserInformationByAdminDTO>} - Promise resolving to user information
+ * @throws Will throw an error if the database query fails
+ */
 export const insertUserInformationByAdmin = async (
     transaction: PoolConnection,
     {
@@ -105,7 +169,7 @@ export const insertUserInformationByAdmin = async (
 };
 
 /**
- * Query the user information by userId
+ * Query get the user information by userId
  * @param {IGetUserByUserId} {userId} - The ID of the user to retrieve
  * @returns {Promise<GetUserByUserIdDTO>} - Promise resolving to user information
  * @throws Will throw an error if the database query fails

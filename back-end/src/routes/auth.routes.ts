@@ -2,7 +2,7 @@
 import { Router } from "express";
 
 // controllers
-import { postSignUpController, postRefreshTokenController, postTokenController } from "../controllers/auth.controllers";
+import { postSignUpController, postRefreshTokenController, postTokenController, postSignInController } from "../controllers/auth.controllers";
 
 // middlewares
 import headerHandlerMiddleware from "../middlewares/header-handler.middlerware";
@@ -22,6 +22,6 @@ authRouter.post("/refresh-token", headerHandlerMiddleware, postRefreshTokenContr
 authRouter.post("/sign-up", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware(["ADMIN"]), postSignUpController);
 
 // [POST] /auth/sign-in
-// authRouter.post("/sign-in", headerHandlerMiddleware, postSignInController);
+authRouter.post("/sign-in", headerHandlerMiddleware, postSignInController);
 
 export default authRouter;

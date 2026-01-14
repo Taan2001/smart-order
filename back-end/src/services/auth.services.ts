@@ -13,12 +13,14 @@ import { ERRORS } from "../constants/error.constants";
 
 //database repositories
 import { commitPoolTransaction, createConnectionPoolTransaction, releasePoolTransaction, rollbackPoolTransaction } from "../database/connection-pool";
-import { getUserByUserId, insertUserInformationByAdmin } from "../database/repositories/auth.repositories";
+import { getUserByUserId, getUserInformationByUsernameAndPassword, insertUserInformationByAdmin } from "../database/repositories/auth.repositories";
 
 // interfaces
 import {
     IPostRefreshTokenRequestBody,
     IPostRefreshTokenResponse,
+    IPostSignInRequestBody,
+    IPostSignInResponse,
     IPostSignUpRequestBody,
     IPostSignUpResponse,
     IPostTokenRequestBody,
@@ -26,9 +28,91 @@ import {
 } from "../interfaces/auth.interfaces";
 
 // types
-import { AppResponseSuccess } from "../types/app.types";
+import { AppResponseError, AppResponseSuccess } from "../types/app.types";
 
-export const postSignUpService = async (request: Request, nextFunction: NextFunction): Promise<AppResponseSuccess<IPostSignUpResponse>> => {
+/**
+ * postSignUp Service
+ * @param {Request} request - Express Request
+ * @param {NextFunction} nextFunction - Express Next Function
+ * @returns {Promise<AppResponseSuccess<IPostSignInResponse> | AppResponseError>} - Promise resolving to service result
+ */
+export const postSignInService = async (request: Request, nextFunction: NextFunction): Promise<AppResponseSuccess<IPostSignInResponse> | AppResponseError> => {
+    try {
+        // Step 1: Validate body parameters.
+        const { username, password } = request.body as IPostSignInRequestBody;
+        const messages: string[] = [];
+
+        // ---> Step1-1: Check require parameters.
+        if (username === undefined) {
+            messages.push(ERRORS.POST_SIGN_UP_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("username"));
+        }
+        if (password === undefined) {
+            messages.push(ERRORS.POST_SIGN_UP_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("password"));
+        }
+
+        if (messages.length > 0) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.POST_SIGN_UP_REQUIRED_FIELD_ERROR.ERROR_CODE,
+                errorMessages: messages,
+            });
+        }
+
+        // ---> Step1-2: Check data type.
+        // username
+        if (!isString(username)) {
+            messages.push(ERRORS.POST_SIGN_IN_DATA_TYPE_ERROR.ERROR_MESSAGE("username", "data types"));
+        }
+        if (isString(username) && !username.trim()) {
+            messages.push(ERRORS.POST_SIGN_IN_DATA_TYPE_ERROR.ERROR_MESSAGE("username", "input value"));
+        }
+        // password
+        if (!isString(password)) {
+            messages.push(ERRORS.POST_SIGN_IN_DATA_TYPE_ERROR.ERROR_MESSAGE("password", "data types"));
+        }
+        if (isString(password) && !password.trim()) {
+            messages.push(ERRORS.POST_SIGN_IN_DATA_TYPE_ERROR.ERROR_MESSAGE("password", "input value"));
+        }
+
+        // Step 2:  Get userInformation
+        const users = await getUserInformationByUsernameAndPassword({ username, password });
+
+        if (users.length !== 1) {
+            throw ResponseError({
+                statusCode: 404,
+                errorCode: ERRORS.POST_SIGN_IN_USER_INFORMATION_NOT_FOUND_ERROR.ERROR_CODE,
+                errorMessages: [ERRORS.POST_SIGN_IN_USER_INFORMATION_NOT_FOUND_ERROR.ERROR_MESSAGE()],
+            });
+        }
+
+        const user = users[0];
+
+        // Step3: Create Access Token and Refresh Token
+        const accessToken = await generateAccessToken(request, user);
+        const refreshToken = await generateRefreshToken(request, user);
+
+        return ResponseSuccess<IPostSignInResponse>({
+            statusCode: 200,
+            data: {
+                user: {
+                    userId: user.userId,
+                },
+                accessToken,
+                refreshToken,
+            },
+        });
+    } catch (error) {
+        throw error;
+    }
+};
+
+/**
+ * postSignUp Service
+ * @param {Request} request - Express Request
+ * @param {NextFunction} nextFunction - Express Next Function
+ * @returns {Promise<AppResponseSuccess<IPostSignUpResponse> | AppResponseError>} - Promise resolving to service result
+ */
+export const postSignUpService = async (request: Request, nextFunction: NextFunction): Promise<AppResponseSuccess<IPostSignUpResponse> | AppResponseError> => {
     try {
         // Step 3: Validate body parameters.
         const { username, password, fullname, phone, address, type } = request.body as IPostSignUpRequestBody;
@@ -65,57 +149,57 @@ export const postSignUpService = async (request: Request, nextFunction: NextFunc
         // ---> Step3-2: Check data type.
         // username
         if (!isString(username)) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("username", "data types"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("username", "data types"));
         }
         if (isString(username) && username.includes(" ")) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("username", "space in string"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("username", "space in string"));
         }
         if (isString(username) && username.trim().length > 24) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("username", "maximum length"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("username", "maximum length"));
         }
         if (isString(username) && username.trim().length < 6) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("username", "minimum length"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("username", "minimum length"));
         }
 
         // password
         if (!isString(password)) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("password", "data types"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("password", "data types"));
         }
         if (isString(password) && password.includes(" ")) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("password", "space in string"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("password", "space in string"));
         }
         if (isString(password) && password.trim().length > 16) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("password", "maximum length"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("password", "maximum length"));
         }
         if (isString(password) && password.trim().length < 8) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("password", "minimum length"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("password", "minimum length"));
         }
 
         // phone
         if (!isVietnamesePhoneNumber(phone)) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("phone", "phone number"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("phone", "phone number"));
         }
 
         // address
         if (!isString(address)) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("address", "data types"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("address", "data types"));
         }
         if (isString(address) && address.trim().length > 128) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("address", "maximum length"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("address", "maximum length"));
         }
 
         // type
         if (!isNumberic(type) || Number.isNaN(type)) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("type", "data types"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("type", "data types"));
         }
         if (type === 1) {
-            messages.push(ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_MESSAGE("type", "input value"));
+            messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("type", "input value"));
         }
 
         if (messages.length > 0) {
             throw ResponseError({
                 statusCode: 400,
-                errorCode: ERRORS.POST_SIGN_UP_DATE_TYPE_ERROR.ERROR_CODE,
+                errorCode: ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_CODE,
                 errorMessages: messages,
             });
         }
@@ -179,7 +263,10 @@ export const postSignUpService = async (request: Request, nextFunction: NextFunc
  * @param {NextFunction} nextFunction - Express Next Function
  * @returns {Promise<AppResponseSuccess<IPostRefreshTokenResponse> | AppResponseError>} - Promise resolving to service result
  */
-export const postRefreshTokenService = async (request: Request, nextFunction: NextFunction): Promise<AppResponseSuccess<IPostRefreshTokenResponse>> => {
+export const postRefreshTokenService = async (
+    request: Request,
+    nextFunction: NextFunction
+): Promise<AppResponseSuccess<IPostRefreshTokenResponse> | AppResponseError> => {
     try {
         // Step 1: Validate body parameters.
         const { refreshToken } = request.payload as IPostRefreshTokenRequestBody;
@@ -240,7 +327,7 @@ export const postRefreshTokenService = async (request: Request, nextFunction: Ne
  * @param {NextFunction} nextFunction - Express Next Function
  * @returns { Promise<AppResponseSuccess<IPostTokenResponse> | AppResponseError> } - Promise resolving to service result
  */
-export const postTokenService = async (request: Request, nextFunction: NextFunction): Promise<AppResponseSuccess<IPostTokenResponse>> => {
+export const postTokenService = async (request: Request, nextFunction: NextFunction): Promise<AppResponseSuccess<IPostTokenResponse> | AppResponseError> => {
     try {
         // Business logic
         // Step 1: Validate body parameters.
@@ -273,8 +360,8 @@ export const postTokenService = async (request: Request, nextFunction: NextFunct
         if (users.length === 1 && users[0].deleteFlg === 1) {
             throw ResponseError({
                 statusCode: 401,
-                errorCode: "E00013",
-                errorMessages: ["The current user account is unavailable."],
+                errorCode: ERRORS.POST_TOKEN_USER_INFORMATION_NOT_FOUND_ERROR.ERROR_CODE,
+                errorMessages: [ERRORS.POST_TOKEN_USER_INFORMATION_NOT_FOUND_ERROR.ERROR_MESSAGE()],
             });
         }
 
@@ -298,20 +385,3 @@ export const postTokenService = async (request: Request, nextFunction: NextFunct
         throw error;
     }
 };
-
-// /**
-//  * Sign In Service
-//  * @param {Request} request - Express Request
-//  * @param {NextFunction} nextFunction - Express Next Function
-//  * @returns { Promise<AppResponseSuccess<IPostSignInResponse> | AppResponseError> } - Promise resolving to service result
-//  */
-// export const postSignInService = async (request: Request, nextFunction: NextFunction): Promise<AppResponseSuccess<IPostSignInResponse>> => {
-//     try {
-//         // logic here
-
-//         // return response
-//         return ResponseSuccess<IPostSignInResponse>({ statusCode: 200, data: { messages: ["Sign In successfully"] } });
-//     } catch (error) {
-//         throw error;
-//     }
-// };
