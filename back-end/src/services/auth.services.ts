@@ -74,6 +74,14 @@ export const postSignInService = async (request: Request, nextFunction: NextFunc
             messages.push(ERRORS.POST_SIGN_IN_DATA_TYPE_ERROR.ERROR_MESSAGE("password", "input value"));
         }
 
+        if (messages.length > 0) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.POST_SIGN_IN_DATA_TYPE_ERROR.ERROR_CODE,
+                errorMessages: messages,
+            });
+        }
+
         // Step 2:  Get userInformation
         const users = await getUserInformationByUsernameAndPassword({ username, password });
 
