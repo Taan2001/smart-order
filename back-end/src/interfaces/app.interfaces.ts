@@ -30,3 +30,11 @@ export interface ICurrentUser {
     type: number;
     deleteFlg: number;
 }
+
+export interface ILimiterHandlerMiddleware {
+    windowMinutes: number;
+    max: number;
+    standardHeaders?: boolean | "draft-8" | "draft-6" | "draft-7" | undefined;
+    legacyHeaders?: boolean;
+    message?: string;
+}

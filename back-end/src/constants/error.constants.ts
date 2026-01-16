@@ -125,4 +125,17 @@ export const ERRORS = {
         ERROR_CODE: "E00023",
         ERROR_MESSAGE: () => "The user information not found!",
     },
+
+    POST_USER_REQUIRED_FIELD_ERROR: {
+        ERROR_CODE: "E00024",
+        ERROR_MESSAGE: (requiredField: string) => `The ${requiredField} is required!`,
+    },
+
+    POST_USER_DATA_TYPE_ERROR: {
+        ERROR_CODE: "E00025",
+        ERROR_MESSAGE: (
+            fieldName: string,
+            errorName: "data types" | "maximum length" | "minimum length" | "space in string" | "phone number" | "input value"
+        ) => `The ${fieldName} has an error regarding its ${errorName}.`,
+    },
 };

@@ -1,19 +1,26 @@
 // libs
 import { Router } from "express";
 
-// create router
-const userRouter = Router();
+// middlewares
+import limiterHandlerMiddleware from "../middlewares/limiter-handler.middleware";
+import headerHandlerMiddleware from "../middlewares/header-handler.middlerware";
 
-// [POST] /user
-// userRouter.post("/user", headerHandlerMiddleware, postUserController);
+// controllers
+import { postUserController } from "../controllers/user.controllers";
+
+// create router
+const userRouters = Router();
+
+// [POST] /users/user
+userRouters.post("/user", headerHandlerMiddleware, limiterHandlerMiddleware({ windowMinutes: 60 * 4, max: 2 }), postUserController);
 
 // [POST] /users/:userId
-// userRouter.post("/users/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, postUserDetailController);
+// userRouters.post("/users/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, postUserDetailController);
 
 // [GET] /users
-// userRouter.get("/users", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUsersController);
+// userRouters.get("/users", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUsersController);
 
 // [GET] /users/:userId
-// userRouter.get("/users/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUserDetailController);
+// userRouters.get("/users/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUserDetailController);
 
-export default userRouter;
+export default userRouters;
