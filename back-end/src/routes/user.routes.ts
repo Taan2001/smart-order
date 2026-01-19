@@ -2,11 +2,13 @@
 import { Router } from "express";
 
 // middlewares
-import limiterHandlerMiddleware from "../middlewares/limiter-handler.middleware";
 import headerHandlerMiddleware from "../middlewares/header-handler.middlerware";
+import limiterHandlerMiddleware from "../middlewares/limiter-handler.middleware";
+import authenticationHandlerMiddleware from "../middlewares/authentication-handler.middleware";
+import authorizationHandlerMiddleware from "../middlewares/authorization-handler.middleware";
 
 // controllers
-import { postUserController } from "../controllers/user.controllers";
+import { postUserController, postUserDetailController } from "../controllers/user.controllers";
 
 // create router
 const userRouters = Router();
@@ -15,12 +17,12 @@ const userRouters = Router();
 userRouters.post("/user", headerHandlerMiddleware, limiterHandlerMiddleware({ windowMinutes: 60 * 4, max: 2 }), postUserController);
 
 // [POST] /users/:userId
-// userRouters.post("/users/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, postUserDetailController);
+userRouters.post("/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware(["ADMIN"]), postUserDetailController);
 
 // [GET] /users
-// userRouters.get("/users", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUsersController);
+// userRouters.get("/", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUsersController);
 
 // [GET] /users/:userId
-// userRouters.get("/users/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUserDetailController);
+// userRouters.get("/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUserDetailController);
 
 export default userRouters;

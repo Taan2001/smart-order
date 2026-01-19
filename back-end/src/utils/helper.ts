@@ -2,7 +2,9 @@
 export const isString = (str: any) => typeof str === "string";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isNumberic = (number: any) => typeof number === "number";
+export const isNumberic = (number: any): boolean => {
+    return typeof number === "number" && Number.isFinite(number);
+};
 
 /**
  *

@@ -49,7 +49,7 @@ const authorizationHandlerMiddleware = (alowedRoles: TypeKeys[]) => {
                     errorDetails: [
                         {
                             functionName: "authorizationHandlerMiddleware",
-                            params: [JSON.stringify(user)],
+                            params: [user.userId],
                             errorMessage: "The user does not have sufficient rights to access.",
                         },
                     ],

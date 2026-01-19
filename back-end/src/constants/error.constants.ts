@@ -138,4 +138,27 @@ export const ERRORS = {
             errorName: "data types" | "maximum length" | "minimum length" | "space in string" | "phone number" | "input value"
         ) => `The ${fieldName} has an error regarding its ${errorName}.`,
     },
+
+    POST_USER_INSERT_USER_INFORMATION_BY_END_USER_ERROR: {
+        ERROR_CODE: "E00026",
+        ERROR_MESSAGE: (tableName: string) => `An error occurred while inserting data into the ${tableName} table.`,
+    },
+
+    POST_USER_DETAIL_REQUIRED_FIELD_ERROR: {
+        ERROR_CODE: "E00027",
+        ERROR_MESSAGE: (requiredField: string) => `The ${requiredField} is required!`,
+    },
+
+    POST_USER_DETAIL_DATA_TYPE_ERROR: {
+        ERROR_CODE: "E00028",
+        ERROR_MESSAGE: (
+            fieldName: string,
+            errorName: "data types" | "maximum length" | "minimum length" | "space in string" | "phone number" | "input value"
+        ) => `The ${fieldName} has an error regarding its ${errorName}.`,
+    },
+
+    POST_USER_INSERT_USER_INFORMATION_BY_ADMIN_WITH_USER_ID_ERROR: {
+        ERROR_CODE: "E00029",
+        ERROR_MESSAGE: (tableName: string) => `An error occurred while updating data into the ${tableName} table.`,
+    },
 };
