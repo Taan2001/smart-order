@@ -81,7 +81,6 @@ export const selectUsers = async ({
             OFFSET ?;
         `;
         sqlParams.push(limit, offset);
-        console.log(sqlSelect);
 
         const rows = await queryPoolPromise<SelectUsersDTO, SelectUsersValues>(sqlSelect, sqlParams);
 
@@ -134,7 +133,6 @@ export const selectCountSelectUsers = async ({ filterField, filterFields, filter
                 M_USERS
             ${filterClause}
         `;
-        console.log(sqlSelect);
 
         const rows = await queryPoolPromise<CountSelectUsersDTO, CountSelectUsersValues>(sqlSelect, sqlParams);
 
