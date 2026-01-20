@@ -21,7 +21,7 @@ export const postSignInController = catchAsync(async (request: Request, response
     // log request
     logger.request(request.requestId, request.apiName, request.payload);
 
-    // Implement the refresh token logic here
+    // Implement the sign in logic here
     const result = await postSignInService(request, nextFunction);
 
     // log response
@@ -44,7 +44,7 @@ export const postSignUpController = catchAsync(async (request: Request, response
     // log request
     logger.request(request.requestId, request.apiName, request.payload);
 
-    // Implement the refresh token logic here
+    // Implement the sign up logic here
     const result = await postSignUpService(request, nextFunction);
 
     // log response

@@ -196,4 +196,20 @@ export const ERRORS = {
         ERROR_CODE: "E00035",
         ERROR_MESSAGE: (tableName: string) => `An error occurred while selecting data into the ${tableName} table.`,
     },
+
+    GET_USER_DETAIL_REQUIRED_FIELD_ERROR: {
+        ERROR_CODE: "E00036",
+        ERROR_MESSAGE: (requiredField: string) => `The ${requiredField} is required!`,
+    },
+
+    GET_USER_DETAIL_SELECT_USER_DETAIL_BY_USER_ID_ERROR: {
+        ERROR_CODE: "E00037",
+        ERROR_MESSAGE: (tableName: string) => `An error occurred while selecting data into the ${tableName} table.`,
+    },
+
+    // common
+    USER_INFORMATION_NOT_FOUND_ERROR: {
+        ERROR_CODE: "E00038",
+        ERROR_MESSAGE: () => `The user information not found!`,
+    },
 };

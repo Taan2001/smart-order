@@ -8,7 +8,7 @@ import authenticationHandlerMiddleware from "../middlewares/authentication-handl
 import authorizationHandlerMiddleware from "../middlewares/authorization-handler.middleware";
 
 // controllers
-import { postUserController, postUserDetailController, getUsersController } from "../controllers/user.controllers";
+import { postUserController, postUserDetailController, getUsersController, getUserDetailController } from "../controllers/user.controllers";
 
 // create router
 const userRouters = Router();
@@ -23,6 +23,6 @@ userRouters.post("/user", headerHandlerMiddleware, limiterHandlerMiddleware({ wi
 userRouters.post("/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware(["ADMIN"]), postUserDetailController);
 
 // [GET] /users/:userId
-// userRouters.get("/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUserDetailController);
+userRouters.get("/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware(["ADMIN"]), getUserDetailController);
 
 export default userRouters;

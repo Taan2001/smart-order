@@ -12,21 +12,73 @@ import { queryPoolPromise, transactionQueryPoolPromise } from "../connection-poo
 
 // dtos
 import {
-    InsertUserInformationByEndUserValues,
-    InsertUserInformationByEndUserDTO,
     IInsertUserInformationByEndUser,
+    InsertUserInformationByEndUserDTO,
+    InsertUserInformationByEndUserValues,
     IUpdateUserInformationByAdminWithUserId,
     UpdateUserInformationByAdminWithUserIdDTO,
+    ICountSelectUsers,
     CountSelectUsersDTO,
     CountSelectUsersValues,
-    ICountSelectUsers,
     ISelectUsers,
     SelectUsersDTO,
     SelectUsersValues,
+    ISelectUserDetailByUserId,
+    SelectUserDetailByUserIdDTO,
+    SelectUserDetailByUserIdValues,
 } from "../dtos/user.dto";
 
 /**
- * Query count the user by condition
+ * Query select the user by userId
+ * @param {ISelectUsers} payload - data to insert
+ * @returns {Promise<SelectUsersDTO>} - Promise resolving to user information
+ * @throws Will throw an error if the database query fails
+ */
+export const selectUserDetailByUserId = async ({ userId }: ISelectUserDetailByUserId): Promise<SelectUserDetailByUserIdDTO[]> => {
+    try {
+        // create sqlSelect
+        const sqlSelect = `
+            SELECT
+                USER_ID AS userId,
+                USER_FULLNAME AS fullname,
+                USER_PHONE AS phone,
+                USER_ADDRESS AS address,
+                USER_TYPE AS type,
+                USER_DELETE_FLG AS deleteFlg,
+                USER_CREATED_BY AS createdBy,
+                USER_CREATED_AT AS createdAt
+            FROM 
+                M_USERS
+            WHERE
+                USER_ID = ?
+        `;
+        const sqlParams = [userId];
+
+        const rows = await queryPoolPromise<SelectUserDetailByUserIdDTO, SelectUserDetailByUserIdValues>(sqlSelect, sqlParams);
+
+        if (!rows) {
+            return [];
+        }
+
+        return rows;
+    } catch (error) {
+        throw ResponseError({
+            statusCode: 500,
+            errorCode: ERRORS.GET_USER_DETAIL_SELECT_USER_DETAIL_BY_USER_ID_ERROR.ERROR_CODE,
+            errorMessages: [ERRORS.GET_USER_DETAIL_SELECT_USER_DETAIL_BY_USER_ID_ERROR.ERROR_MESSAGE("M_USERS")],
+            errorDetails: [
+                {
+                    functionName: "selectUserDetail",
+                    params: [],
+                    errorMessage: String(error),
+                },
+            ],
+        });
+    }
+};
+
+/**
+ * Query select the user by condition
  * @param {ISelectUsers} payload - data to insert
  * @returns {Promise<SelectUsersDTO>} - Promise resolving to user information
  * @throws Will throw an error if the database query fails

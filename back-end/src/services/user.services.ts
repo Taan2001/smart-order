@@ -17,10 +17,13 @@ import {
     insertUserInformationByEndUser,
     updateUserInformationByAdminWithUserId,
     selectUsers,
+    selectUserDetailByUserId,
 } from "../database/repositories/user.repositories";
 
 // interfaces
 import {
+    IGetUserDetailRequestPath,
+    IGetUserDetailResponse,
     IGetUsersRequestQuery,
     IGetUsersResponse,
     IPostUserDetailRequestBody,
@@ -33,6 +36,55 @@ import {
 // types
 import { AppResponseError, AppResponseSuccess } from "../types/app.types";
 import { FILTER_FIELD_GET_USERS, FILTER_TYPE_VALUE_GET_USERS, LIMITS, SORT_FIELD_GET_USERS, SORT_TYPE } from "../constants/common.constants";
+/**
+ * getUserDetail Service
+ * @param {Request} request - Express Request
+ * @param {NextFunction} nextFunction - Express Next Function
+ * @returns {Promise<AppResponseSuccess<IGetUserDetailResponse> | AppResponseError>} - Promise resolving to service result
+ */
+export const getUserDetailService = async (
+    request: Request,
+    nextFunction: NextFunction
+): Promise<AppResponseSuccess<IGetUserDetailResponse> | AppResponseError> => {
+    try {
+        // Step 3: Validate query parameters.
+        const { userId } = request.params as unknown as IGetUserDetailRequestPath;
+        const messages: string[] = [];
+        // ---> Step3-1: Check require parameters.
+        if (userId === undefined) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.GET_USER_DETAIL_REQUIRED_FIELD_ERROR.ERROR_CODE,
+                errorMessages: [ERRORS.GET_USER_DETAIL_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("userId")],
+            });
+        }
+
+        // ---> Step3-2: Check data type.
+        // not implemented yet
+
+        // Step 4: Retrieving a user information
+        const users = await selectUserDetailByUserId({ userId });
+
+        if (users.length === 0) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.USER_INFORMATION_NOT_FOUND_ERROR.ERROR_CODE,
+                errorMessages: [ERRORS.USER_INFORMATION_NOT_FOUND_ERROR.ERROR_MESSAGE()],
+            });
+        }
+        const user = users[0];
+
+        // return response
+        return ResponseSuccess<IGetUserDetailResponse>({
+            statusCode: 200,
+            data: {
+                user,
+            },
+        });
+    } catch (error) {
+        throw error;
+    }
+};
 
 /**
  * getUsers Service

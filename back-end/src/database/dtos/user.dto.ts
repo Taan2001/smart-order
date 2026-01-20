@@ -1,4 +1,23 @@
 import { DefaultInsertedDTO, DefaultUpdatedDTO, DefaultValues } from ".";
+
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
+export interface SelectUserDetailByUserIdValues extends DefaultValues {}
+
+export type SelectUserDetailByUserIdDTO = {
+    userId: string;
+    fullname: string;
+    phone: string;
+    address: string;
+    type: number;
+    deleteFlg: number;
+    createdBy: string;
+    createdAt: number;
+};
+
+export interface ISelectUserDetailByUserId {
+    userId: string;
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface SelectUsersValues extends DefaultValues {}
 

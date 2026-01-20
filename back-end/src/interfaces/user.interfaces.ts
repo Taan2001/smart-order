@@ -1,5 +1,20 @@
 import { IPageInfo, ISearchQuery } from "./app.interfaces";
 
+export interface IGetUserDetailRequestPath {
+    userId: string;
+}
+
+export interface IGetUserDetailResponse {
+    user: {
+        userId: string;
+        fullname: string;
+        address: string;
+        phone: string;
+        type: number;
+        deleteFlg: number;
+    };
+}
+
 // eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export interface IGetUsersRequestQuery extends ISearchQuery {}
 
