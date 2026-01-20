@@ -157,8 +157,43 @@ export const ERRORS = {
         ) => `The ${fieldName} has an error regarding its ${errorName}.`,
     },
 
-    POST_USER_INSERT_USER_INFORMATION_BY_ADMIN_WITH_USER_ID_ERROR: {
+    POST_USER_DETAIL_UPDATE_USER_INFORMATION_BY_ADMIN_WITH_USER_ID_ERROR: {
         ERROR_CODE: "E00029",
         ERROR_MESSAGE: (tableName: string) => `An error occurred while updating data into the ${tableName} table.`,
+    },
+
+    GET_USERS_REQUIRED_FIELD_ERROR: {
+        ERROR_CODE: "E00030",
+        ERROR_MESSAGE: (requiredField: string) => `The ${requiredField} is required!`,
+    },
+
+    GET_USERS_DATA_TYPE_ERROR: {
+        ERROR_CODE: "E00031",
+        ERROR_MESSAGE: (
+            fieldName: string,
+            errorName: "data types" | "maximum length" | "minimum length" | "space in string" | "phone number" | "input value"
+        ) => `The ${fieldName} has an error regarding its ${errorName}.`,
+    },
+
+    GET_USERS_SELECT_COUNT_USERS_ERROR: {
+        ERROR_CODE: "E00032",
+        ERROR_MESSAGE: (tableName: string) => `An error occurred while selecting data into the ${tableName} table.`,
+    },
+
+    // common error
+    EMPTY_LIST_ERROR: {
+        ERROR_CODE: "E00033",
+        ERROR_MESSAGE: () => `Empty List.`,
+    },
+
+    // common error
+    OFFSET_ERROR: {
+        ERROR_CODE: "E00034",
+        ERROR_MESSAGE: () => `Page not found.`,
+    },
+
+    GET_USERS_SELECT_USERS_ERROR: {
+        ERROR_CODE: "E00035",
+        ERROR_MESSAGE: (tableName: string) => `An error occurred while selecting data into the ${tableName} table.`,
     },
 };

@@ -2,8 +2,21 @@
 export const isString = (str: any) => typeof str === "string";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const isNumberic = (number: any): boolean => {
-    return typeof number === "number" && Number.isFinite(number);
+export const isNumeric = (value: any): boolean => {
+    return typeof value === "number" && Number.isFinite(value);
+};
+
+export const isValidNumber = (value: number | string) => {
+    if (typeof value === "number") {
+        return Number.isFinite(value);
+    }
+
+    if (typeof value === "string") {
+        if (value.trim() === "") return false;
+        return Number.isFinite(Number(value));
+    }
+
+    return false;
 };
 
 /**

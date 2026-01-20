@@ -8,19 +8,19 @@ import authenticationHandlerMiddleware from "../middlewares/authentication-handl
 import authorizationHandlerMiddleware from "../middlewares/authorization-handler.middleware";
 
 // controllers
-import { postUserController, postUserDetailController } from "../controllers/user.controllers";
+import { postUserController, postUserDetailController, getUsersController } from "../controllers/user.controllers";
 
 // create router
 const userRouters = Router();
+
+// [GET] /users
+userRouters.get("/", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware(["ADMIN"]), getUsersController);
 
 // [POST] /users/user
 userRouters.post("/user", headerHandlerMiddleware, limiterHandlerMiddleware({ windowMinutes: 60 * 4, max: 2 }), postUserController);
 
 // [POST] /users/:userId
 userRouters.post("/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware(["ADMIN"]), postUserDetailController);
-
-// [GET] /users
-// userRouters.get("/", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUsersController);
 
 // [GET] /users/:userId
 // userRouters.get("/:userId", headerHandlerMiddleware, authenticationHandlerMiddleware, authorizationHandlerMiddleware, getUserDetailController);

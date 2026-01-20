@@ -2,11 +2,34 @@
 import { Request, Response, NextFunction } from "express";
 
 // services
-import { postUserDetailService, postUserService } from "../services/user.services";
+import { postUserDetailService, postUserService, getUsersService } from "../services/user.services";
 
 // utils
 import { catchAsync } from "../utils/common";
 import logger from "../utils/logger";
+
+/**
+ * getUser Controller
+ * @param {Request} request - Express Request
+ * @param {Response} response - Express Response
+ * @param {NextFunction} nextFunction - Express Next Function
+ */
+export const getUsersController = catchAsync(async (request: Request, response: Response, nextFunction: NextFunction) => {
+    // get payload
+    request.payload = { ...request.query };
+
+    // log request
+    logger.request(request.requestId, request.apiName, request.payload);
+
+    // Implement the refresh token logic here
+    const result = await getUsersService(request, nextFunction);
+
+    // log response
+    logger.response(request.requestId, request.apiName, result);
+
+    // send response
+    response.status(result.statusCode).send(result);
+});
 
 /**
  * postUserDetail Controller
@@ -16,7 +39,7 @@ import logger from "../utils/logger";
  */
 export const postUserDetailController = catchAsync(async (request: Request, response: Response, nextFunction: NextFunction) => {
     // get payload
-    request.payload = { ...request.body };
+    request.payload = { ...request.params, ...request.body };
 
     // log request
     logger.request(request.requestId, request.apiName, request.payload);

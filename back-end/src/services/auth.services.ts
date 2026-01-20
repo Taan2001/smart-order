@@ -6,7 +6,7 @@ import dayjs from "dayjs";
 // utils
 import { ResponseError, ResponseSuccess } from "../utils/common";
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from "../utils/jwt";
-import { isNumberic, isString, isVietnamesePhoneNumber } from "../utils/helper";
+import { isNumeric, isString, isVietnamesePhoneNumber } from "../utils/helper";
 
 //constants
 import { ERRORS } from "../constants/error.constants";
@@ -197,7 +197,7 @@ export const postSignUpService = async (request: Request, nextFunction: NextFunc
         }
 
         // type
-        if (!isNumberic(type) || Number.isNaN(type)) {
+        if (!isNumeric(type) || Number.isNaN(type)) {
             messages.push(ERRORS.POST_SIGN_UP_DATA_TYPE_ERROR.ERROR_MESSAGE("type", "data types"));
         }
         if (type === 1) {

@@ -38,3 +38,19 @@ export interface ILimiterHandlerMiddleware {
     legacyHeaders?: boolean;
     message?: string;
 }
+
+export interface ISearchQuery {
+    limit: string | number;
+    currentPage: string | number;
+    sortType: string;
+    sortField: string;
+    filterField: string;
+    filterValue: string;
+}
+
+export interface IPageInfo {
+    totalPages: number;
+    currentPage: number;
+    totalRecords: number;
+    limit: number;
+}

@@ -5,17 +5,24 @@ import dayjs from "dayjs";
 
 // utils
 import { ResponseError, ResponseSuccess } from "../utils/common";
-import { isNumberic, isString, isVietnamesePhoneNumber } from "../utils/helper";
+import { isNumeric, isString, isValidNumber, isVietnamesePhoneNumber } from "../utils/helper";
 
 //constants
 import { ERRORS } from "../constants/error.constants";
 
 //database repositories
 import { commitPoolTransaction, createConnectionPoolTransaction, releasePoolTransaction, rollbackPoolTransaction } from "../database/connection-pool";
-import { insertUserInformationByEndUser, updateUserInformationByAdminWithUserId } from "../database/repositories/user.repositories";
+import {
+    selectCountSelectUsers,
+    insertUserInformationByEndUser,
+    updateUserInformationByAdminWithUserId,
+    selectUsers,
+} from "../database/repositories/user.repositories";
 
 // interfaces
 import {
+    IGetUsersRequestQuery,
+    IGetUsersResponse,
     IPostUserDetailRequestBody,
     IPostUserDetailRequestPath,
     IPostUserDetailResponse,
@@ -25,6 +32,178 @@ import {
 
 // types
 import { AppResponseError, AppResponseSuccess } from "../types/app.types";
+import { FILTER_FIELD_GET_USERS, FILTER_TYPE_VALUE_GET_USERS, LIMITS, SORT_FIELD_GET_USERS, SORT_TYPE } from "../constants/common.constants";
+
+/**
+ * getUsers Service
+ * @param {Request} request - Express Request
+ * @param {NextFunction} nextFunction - Express Next Function
+ * @returns {Promise<AppResponseSuccess<IGetUsersResponse[]> | AppResponseError>} - Promise resolving to service result
+ */
+export const getUsersService = async (request: Request, nextFunction: NextFunction): Promise<AppResponseSuccess<IGetUsersResponse> | AppResponseError> => {
+    try {
+        // Step 3: Validate query parameters.
+        const { limit, currentPage, sortType, sortField, filterField, filterValue } = request.query as unknown as IGetUsersRequestQuery;
+        const messages: string[] = [];
+
+        // ---> Step3-1: Check require parameters.
+        if (limit === undefined) {
+            messages.push(ERRORS.GET_USERS_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("limit"));
+        }
+
+        if (currentPage === undefined) {
+            messages.push(ERRORS.GET_USERS_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("currentPage"));
+        }
+
+        if (sortType === undefined) {
+            messages.push(ERRORS.GET_USERS_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("sortType"));
+        }
+
+        if (sortField === undefined) {
+            messages.push(ERRORS.GET_USERS_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("sortField"));
+        }
+
+        if (filterField === undefined) {
+            messages.push(ERRORS.GET_USERS_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("filterField"));
+        }
+
+        if (filterValue === undefined) {
+            messages.push(ERRORS.GET_USERS_REQUIRED_FIELD_ERROR.ERROR_MESSAGE("filterValue"));
+        }
+
+        if (messages.length > 0) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.GET_USERS_REQUIRED_FIELD_ERROR.ERROR_CODE,
+                errorMessages: messages,
+            });
+        }
+
+        // ---> Step3-2: Check data type.
+        // limit
+        if (!isValidNumber(limit)) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("limit", "data types"));
+        }
+        if (isValidNumber(limit) && !LIMITS.includes(Number(limit))) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("limit", "input value"));
+        }
+
+        // currentPage
+        if (!isValidNumber(currentPage)) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("currentPage", "data types"));
+        }
+        if (isValidNumber(currentPage) && Number(currentPage) <= 0) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("currentPage", "input value"));
+        }
+
+        // sortField
+        if (!isString(sortField)) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("sortField", "data types"));
+        }
+        if (isString(sortField) && !SORT_FIELD_GET_USERS.includes(sortField.toUpperCase())) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("sortField", "input value"));
+        }
+
+        // sortType
+        if (!isString(sortType)) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("sortType", "data types"));
+        }
+        if (isString(sortType) && !SORT_TYPE.includes(sortType.toUpperCase())) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("sortType", "input value"));
+        }
+
+        // filterField
+        if (!isString(filterField)) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("filterField", "data types"));
+        }
+        if (isString(filterField) && !FILTER_FIELD_GET_USERS.includes(filterField.toUpperCase())) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("filterField", "input value"));
+        }
+
+        // filterValue
+        if (filterField && FILTER_TYPE_VALUE_GET_USERS[filterField as keyof typeof FILTER_TYPE_VALUE_GET_USERS] === "number" && !isValidNumber(filterValue)) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("filterValue", "input value"));
+        }
+        if (filterField && FILTER_TYPE_VALUE_GET_USERS[filterField as keyof typeof FILTER_TYPE_VALUE_GET_USERS] === "string" && !isString(filterValue)) {
+            messages.push(ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_MESSAGE("filterValue", "input value"));
+        }
+
+        if (messages.length > 0) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.GET_USERS_DATA_TYPE_ERROR.ERROR_CODE,
+                errorMessages: messages,
+            });
+        }
+
+        // Step 4: Retrieving a list of user information
+        // ---> Step4-1: Calculate the page info
+        // const totalUsers = await selectCountSelectUsers({ filterField: filterField as string, filterValue: handleFilterValue(filterValue) });
+        const totalUsers = await selectCountSelectUsers({
+            filterField: filterField,
+            filterFields: FILTER_FIELD_GET_USERS,
+            filterValue: filterValue,
+        });
+
+        if (totalUsers === 0) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.EMPTY_LIST_ERROR.ERROR_CODE,
+                errorMessages: [ERRORS.EMPTY_LIST_ERROR.ERROR_MESSAGE()],
+            });
+        }
+
+        const offset = (Number(currentPage) - 1) * Number(limit);
+
+        if (offset >= totalUsers) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.OFFSET_ERROR.ERROR_CODE,
+                errorMessages: [ERRORS.OFFSET_ERROR.ERROR_MESSAGE()],
+            });
+        }
+
+        const totalPages = Math.ceil(Number(totalUsers) / Number(limit));
+        const pageInfo = {
+            limit: Number(limit),
+            currentPage: Number(currentPage),
+            totalRecords: totalUsers,
+            totalPages,
+        };
+
+        // ---> Step4-2: Get the user information in database
+        const users = await selectUsers({
+            limit: Number(limit),
+            offset,
+            sortField,
+            sortFields: SORT_FIELD_GET_USERS,
+            sortType,
+            sortTypes: SORT_TYPE,
+            filterField,
+            filterFields: FILTER_FIELD_GET_USERS,
+            filterValue,
+        });
+
+        if (users.length === 0) {
+            throw ResponseError({
+                statusCode: 400,
+                errorCode: ERRORS.EMPTY_LIST_ERROR.ERROR_CODE,
+                errorMessages: [ERRORS.EMPTY_LIST_ERROR.ERROR_MESSAGE()],
+            });
+        }
+
+        // return response
+        return ResponseSuccess<IGetUsersResponse>({
+            statusCode: 200,
+            data: {
+                users,
+                pageInfo,
+            },
+        });
+    } catch (error) {
+        throw error;
+    }
+};
 
 /**
  * postUserDetail Service
@@ -95,18 +274,18 @@ export const postUserDetailService = async (
         }
 
         // type
-        if (type !== undefined && !isNumberic(type)) {
+        if (type !== undefined && !isNumeric(type)) {
             messages.push(ERRORS.POST_USER_DETAIL_DATA_TYPE_ERROR.ERROR_MESSAGE("type", "data types"));
         }
-        if (type !== undefined && isNumberic(type) && type === 1) {
+        if (type !== undefined && isNumeric(type) && type === 1) {
             messages.push(ERRORS.POST_USER_DETAIL_DATA_TYPE_ERROR.ERROR_MESSAGE("type", "input value"));
         }
 
         // deleteFlg
-        if (deleteFlg !== undefined && !isNumberic(deleteFlg)) {
+        if (deleteFlg !== undefined && !isNumeric(deleteFlg)) {
             messages.push(ERRORS.POST_USER_DETAIL_DATA_TYPE_ERROR.ERROR_MESSAGE("deleteFlg", "data types"));
         }
-        if (deleteFlg !== undefined && isNumberic(deleteFlg) && deleteFlg !== 1 && deleteFlg !== 0) {
+        if (deleteFlg !== undefined && isNumeric(deleteFlg) && deleteFlg !== 1 && deleteFlg !== 0) {
             messages.push(ERRORS.POST_USER_DETAIL_DATA_TYPE_ERROR.ERROR_MESSAGE("type", "input value"));
         }
 
@@ -118,13 +297,13 @@ export const postUserDetailService = async (
             });
         }
 
-        // Step 3:  Insert the data into the database
-        // ---> Step3-1: Create data before inserting.
+        // Step 4:  Insert the data into the database
+        // ---> Step4-1: Create data before inserting.
         // const userId = uuidv4();
         const timestamp = Date.now();
         const date = dayjs(timestamp).format("YYYY-MM-DD H:mm:ss");
 
-        // ---> Step3-2: Insert the data.
+        // ---> Step4-2: Insert the data.
         const transaction = await createConnectionPoolTransaction();
         try {
             const updatedInformation = await updateUserInformationByAdminWithUserId(transaction, {
