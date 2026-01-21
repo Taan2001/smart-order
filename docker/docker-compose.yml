@@ -1,0 +1,49 @@
+version: "3.9"
+services:
+  smart_order_backend:
+    container_name: smart-order-backend
+    build:
+      context: ../back-end
+      dockerfile: ../docker/back-end/Dockerfile
+    ports:
+      - "3000:8080"
+    env_file:
+      - ../back-end/.env
+    depends_on:
+      smart_order_database:
+        condition: service_healthy
+    # restart: unless-stopped
+
+  #   smart_order_frontend:
+  #     container_name: smart_order_frontend
+  #     build:
+  #     context: ../front-end
+  #     dockerfile: ../docker/frontend/Dockerfile
+  #     ports:
+  #       - "8080:80"
+
+  smart_order_database:
+    container_name: smart-order-database
+    image: mysql:8.0.34
+    environment:
+      MYSQL_ROOT_PASSWORD: rootxroot
+      MYSQL_DATABASE: smart_order_db
+      MYSQL_USER: smart_order_user
+      MYSQL_PASSWORD: "smart_order@123"
+    volumes:
+      - smart_order_data:/var/lib/mysql
+      - ./mysql:/docker-entrypoint-initdb.d
+    ports:
+      - "3307:3306"
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "mysqladmin ping -h localhost -u$MYSQL_USER -p$MYSQL_PASSWORD",
+        ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    # restart: unless-stopped
+volumes:
+  smart_order_data:

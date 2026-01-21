@@ -98,3 +98,7 @@ npm run build
 ```bash
 npm start
 ```
+
+### Deploy with docker
+
+If you haven't made any configuration changes to the source code, we'll proceed to build and run the source on Docker.

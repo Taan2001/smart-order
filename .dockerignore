@@ -1,0 +1,28 @@
+# git
+.git
+.gitignore
+
+# source build
+dist
+
+# logger
+logs
+
+# node_modules
+node_modules
+
+# Environment variables
+.env.development
+.env.example
+.env.test
+.env.production
+
+npm-debug.log
+
+README.md
+
+docker
+
+# database
+data-dumy.sql
+database-script.sql
